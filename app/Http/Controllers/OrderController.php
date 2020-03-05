@@ -19,6 +19,9 @@ class OrderController extends Controller
 		$this->model = new Repository($order);
 	}
 
+    /*
+	List all orders
+    */
     public function index(){
 		$orders = $this->model->with(['orderItems.product','customer'])->get();
 		//dump($orders->toArray());
@@ -32,6 +35,11 @@ class OrderController extends Controller
 		return view('order.details', ['order' =>$order]);
 	}
 
+	/*
+	check whether order print sheet exists 
+	if not - insert printsheet and print item sheet data into database and preview using product width and height
+	else preview data using database records
+	*/
 	public function print($id){
 
 		$order = $this->model->show($id);
@@ -120,6 +128,48 @@ class OrderController extends Controller
 			echo '<img src="data:image/png;base64,'.$image_data_base64.'" />';echo '<br><br><br>';
         }
         
+	} 
+
+	public function createImages(){
+
+		//different sizes of products
+		$images   = array();
+		$images[] = [ 'w' => 100, 'h'=> 100];
+		$images[] = [ 'w' => 200, 'h'=> 200];
+		$images[] = [ 'w' => 300, 'h'=> 300];
+		$images[] = [ 'w' => 400, 'h'=> 400];
+		$images[] = [ 'w' => 500, 'h'=> 200];
+		$images[] = [ 'w' => 200, 'h'=> 500];
+		$images[] = [ 'w' => 400, 'h'=> 400];
+		$images[] = [ 'w' => 500, 'h'=> 200];
+		$images[] = [ 'w' => 200, 'h'=> 500];
+
+		$sheet_w = 1000; //print sheet width
+		$sheet_h = 1500; //print sheet height
+		$sheets = handlePrinting($images, $sheet_w, $sheet_h);
+
+		//placing prodcts on print sheet
+		foreach ($sheets as $items) {
+        	$canvas = imagecreatetruecolor($sheet_w, $sheet_h);
+        	ob_start();
+        	foreach ($items as $item) {
+        		$src = imagecreatetruecolor( $item['w'], $item['h']);
+				$color = imagecolorallocate($canvas, mt_rand(0, 255), mt_rand(0, 255), mt_rand(0, 255));
+				imagefill($src, 0, 0, $color);
+				imagecopy($canvas, $src, $item['fit']->x, $item['fit']->y, 0, 0, $item['w'], $item['h']);
+        	}
+        	imagepng($canvas);
+
+			//Store the contents of the output buffer
+			$image_data = ob_get_contents();
+			// Clean the output buffer and turn off output buffering
+			ob_end_clean();
+
+			imagedestroy($canvas);
+
+			$image_data_base64 = base64_encode ($image_data);
+			echo '<img src="data:image/png;base64,'.$image_data_base64.'" />';echo '<br><br><br>';
+        }
 	} 
 
 }

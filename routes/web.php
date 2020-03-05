@@ -13,4 +13,5 @@
 
 Route::get('/', 'OrderController@index');
 Route::get('orders', 'OrderController@index');
-Route::get('order/print/{id}', 'OrderController@print')->name('order.print')->where('id', '[0-9]+');;
+Route::get('order/print/{id}', 'OrderController@print')->name('order.print')->where('id', '[0-9]+');
+Route::get('test', 'OrderController@createImages');

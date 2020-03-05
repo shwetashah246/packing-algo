@@ -4,7 +4,11 @@ use App\Services\BinTreePacking;
 
 
 if (! function_exists('handlePrinting')) {
-	
+		
+	/*
+	Recursively calls handlePrinting function if order's products are not fitted in a single print sheet
+	BinTreePacking class uses Rectangle Bin Packing Algorithm 
+	*/
 	function handlePrinting($images, $sheet_w, $sheet_h, $print_sheet=[]){
 		$packer = new BinTreePacking($sheet_w, $sheet_h);
 		$images = $packer->fit($images);
